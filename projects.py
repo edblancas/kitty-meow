@@ -66,7 +66,7 @@ def load_main(args, opts):
         "--multi",
         "--reverse",
         "--header=ctrl-p: project | ctrl-e: tabs | ctrl-o: tabs&projects",
-        f"--prompt={default_prompt}> ",
+        f"--prompt={default_prompt}",
         f"--bind={','.join(binds)}",
     ]
     p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -108,12 +108,7 @@ def load_project(boss, path, dir):
 
     parent_window = boss.window_id_map.get(int(window_id))
 
-    # start editor and another window
     boss.call_remote_control(parent_window, ("send-text", "${EDITOR:-vim}\n"))
-    boss.call_remote_control(
-        parent_window,
-        ("launch", "--type", "window", "--dont-take-focus", "--cwd", path),
-    )
 
 
 def load_handler(args: List[str], answer: str, target_window_id: int, boss: Boss):
@@ -130,16 +125,6 @@ def load_handler(args: List[str], answer: str, target_window_id: int, boss: Boss
     for selection in answer:
         path, *rest = selection.split()
         dir = os.path.basename(path)
-
-        if len(rest) == 1:
-            ssh_url = rest[0]
-            print(f"cloning into {dir}...")
-            path = f"{projects_root}/{dir}"
-            subprocess.run(["git", "clone", ssh_url, path])
-            # TODO: handle error, like unset sso on ssh key and try this
-        elif len(rest) != 0:
-            print("something bad happenend :(")
-
         load_project(boss, path, dir)
 
 
